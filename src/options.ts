@@ -24,3 +24,19 @@ export const EXAMPLE_PROMPTS = [
   'Writing quotes and invoices eats my evenings',
 ]
 export const TOOL_SUGGESTIONS = ['QuickBooks', 'Square', 'Toast', 'Jobber', 'Google Workspace', 'Mailchimp', 'Excel', 'None']
+
+import type { Answers } from './types'
+export const EXAMPLES: { label: string; answers: Answers }[] = [
+  {
+    label: 'HVAC tech who misses calls',
+    answers: { businessType: 'HVAC, plumbing or electrical', businessOther: '', size: 'Just me', budget: 'Under $50', categories: ['Customer support & calls'], freeText: "I miss calls when I'm on a job", existingTools: ['Jobber'] },
+  },
+  {
+    label: 'Cafe owner counting stock',
+    answers: { businessType: 'Restaurant or cafe', businessOther: '', size: '2–5 people', budget: '$50–$200', categories: ['Inventory & ordering'], freeText: 'I spend hours counting stock and guessing what to order', existingTools: ['Square'] },
+  },
+  {
+    label: 'Landscaper writing quotes',
+    answers: { businessType: 'Landscaping', businessOther: '', size: 'Just me', budget: 'Free', categories: ['Bookkeeping & invoicing'], freeText: 'Writing quotes and invoices eats my evenings', existingTools: ['QuickBooks'] },
+  },
+]

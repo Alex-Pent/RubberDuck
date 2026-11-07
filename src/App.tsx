@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { emptyAnswers, type Answers, type SearchResults, type Tool } from './types'
-import { toRequest } from './lib'
+import { boot, toRequest } from './lib'
 import { useT } from './i18n'
 import Layout from './components/Layout'
 import { DuckSprite } from './components/Duck'
@@ -13,12 +13,33 @@ import GuidePage from './components/GuidePage'
 type Screen = 'intake' | 'loading' | 'results' | 'guide'
 type Dlg = null | 'how' | 'rank' | 'sba'
 
+/* Saved on this device only, so a refresh does not send someone back to the start. */
+const SAVE_KEY = 'rd.session.v1'
+interface Saved { screen: Screen; answers: Answers; results: SearchResults | null; chosenId: string | null }
+function loadSaved(): Saved | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY)
+    if (!raw) return null
+    const s = JSON.parse(raw) as Saved
+    if (!s || typeof s !== 'object' || !s.answers) return null
+    const answers = { ...emptyAnswers, ...s.answers }
+    const results = s.results && Array.isArray(s.results.tools) ? s.results : null
+    const chosen = results?.tools.find((x) => x.id === s.chosenId)
+    const screen: Screen = results && s.screen === 'guide' && chosen ? 'guide' : results && s.screen !== 'intake' ? 'results' : 'intake'
+    return { screen, answers, results, chosenId: chosen ? chosen.id : null }
+  } catch {
+    return null
+  }
+}
+
 export default function App() {
   const { t } = useT()
-  const [screen, setScreenState] = useState<Screen>('intake')
-  const [answers, setAnswers] = useState<Answers>(emptyAnswers)
-  const [results, setResults] = useState<SearchResults | null>(null)
-  const [chosen, setChosen] = useState<Tool | null>(null)
+  const [saved] = useState(loadSaved)
+  const [screen, setScreenState] = useState<Screen>(saved?.screen ?? 'intake')
+  const [answers, setAnswers] = useState<Answers>(saved?.answers ?? emptyAnswers)
+  const [results, setResults] = useState<SearchResults | null>(saved?.results ?? null)
+  const [chosen, setChosen] = useState<Tool | null>(saved?.results?.tools.find((x) => x.id === saved.chosenId) ?? null)
+  const [restored, setRestored] = useState(saved?.screen === 'results' || saved?.screen === 'guide')
   const [secondFor, setSecondFor] = useState<Tool | null>(null)
   const [dlg, setDlg] = useState<Dlg>(null)
 
@@ -28,7 +49,8 @@ export default function App() {
     window.history[replace ? 'replaceState' : 'pushState']({ s }, '')
   }, [])
   useEffect(() => {
-    window.history.replaceState({ s: 'intake' }, '')
+    boot.done = true
+    window.history.replaceState({ s: screen }, '')
     const onPop = (e: PopStateEvent) => {
       const s = (e.state?.s ?? 'intake') as Screen
       setScreenState(s === 'loading' ? 'intake' : s)
@@ -37,8 +59,17 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
-  const search = (a: Answers) => { setAnswers(a); setSecondFor(null); go('loading') }
-  const startOver = () => { setResults(null); setChosen(null); setSecondFor(null); go('intake') }
+  useEffect(() => {
+    try {
+      const s: Saved = { screen: screen === 'loading' ? 'intake' : screen, answers, results, chosenId: chosen?.id ?? null }
+      localStorage.setItem(SAVE_KEY, JSON.stringify(s))
+    } catch {
+      /* storage can be blocked; the app still works */
+    }
+  }, [screen, answers, results, chosen])
+
+  const search = (a: Answers) => { setAnswers(a); setSecondFor(null); setRestored(false); go('loading') }
+  const startOver = () => { setResults(null); setChosen(null); setSecondFor(null); setRestored(false); go('intake') }
 
   const safeScreen: Screen =
     (screen === 'results' && !results) || (screen === 'guide' && (!chosen || !results)) ? 'intake' : screen
@@ -47,6 +78,15 @@ export default function App() {
     <>
     <DuckSprite />
     <Layout onHome={startOver} onHow={() => setDlg('how')} onSba={() => setDlg('sba')} onRank={() => setDlg('rank')}>
+      {restored && (safeScreen === 'results' || safeScreen === 'guide') && (
+        <div role="status" className="card mb-6 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-bold">{t('saved.welcome')}</p>
+          <div className="flex gap-2">
+            <button type="button" className="btn-secondary" onClick={startOver}>{t('results.startOver')}</button>
+            <button type="button" className="btn-ghost" onClick={() => setRestored(false)}>{t('common.close')}</button>
+          </div>
+        </div>
+      )}
       {safeScreen === 'intake' && <IntakeWizard answers={answers} setAnswers={setAnswers} onSubmit={() => search(answers)} />}
       {safeScreen === 'loading' && (
         <ProgressView

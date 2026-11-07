@@ -11,11 +11,11 @@ export default function ScoreBreakdown({ breakdown }: { breakdown: Breakdown }) 
   const id = useId()
   return (
     <div>
-      <button type="button" className="btn-ghost -ml-3" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
+      <button type="button" className="no-print btn-ghost -ml-3" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
         <span aria-hidden="true">{open ? '▾' : '▸'}</span>
         {open ? t('card.hideDetails') : t('card.details')}
       </button>
-      <div id={id} hidden={!open}>
+      <div id={id} hidden={!open} className="print-show">
         <h4 className="mb-2 font-bold">{t('breakdown.title')}</h4>
         <ul className="space-y-3">
           {KEYS.map((k) => {

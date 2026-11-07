@@ -77,19 +77,38 @@ export default function ResultsList({
 
   const few = ordered.length < 3 && !secondFor
 
+  const mailto = (() => {
+    const lines = ordered.map((x, i) => `${i + 1}. ${x.name} (match ${x.overallScore}/100) - ${x.pricing.startingPrice} - ${x.website}`)
+    const body = [`${t('app.name')}: ${t('results.title')}`, '', results.interpretedProblem, '', ...lines, '', t('results.footer')].join('\n')
+    return `mailto:?subject=${encodeURIComponent(`${t('app.name')}: ${t('results.title')}`)}&body=${encodeURIComponent(body)}`
+  })()
+
   return (
     <div>
+      <div className="print-only mb-4">
+        <p className="font-bold">{t('app.name')} · {new Date().toLocaleDateString()}</p>
+        <p>{chips.map((c) => c.label).join(' · ')}</p>
+      </div>
       <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('results.title')}</h1>
       {results.cached && <p role="status" className="mb-3 rounded-xl bg-elevated p-3 font-bold">{t('results.cached')}</p>}
       <p className="mb-4 text-lg"><strong>{t('results.interpreted')}</strong> {results.interpretedProblem}</p>
 
-      <section aria-labelledby="answers-h" className="card mb-6">
+      <div className="no-print mb-4 flex flex-wrap gap-3">
+        <button type="button" className="btn-secondary" onClick={() => window.print()}>
+          <span aria-hidden="true">🖨</span>{t('share.print')}
+        </button>
+        <a href={mailto} className="btn-secondary">
+          <span aria-hidden="true">✉</span>{t('share.email')}
+        </a>
+      </div>
+
+      <section aria-labelledby="answers-h" className="no-print card mb-6">
         <h2 id="answers-h" className="mb-2 text-lg">{t('results.yourAnswers')}</h2>
         <ul className="flex flex-wrap gap-2">
           {chips.map((c, i) => (
             <li key={i}>
-              <button type="button" onClick={() => openEdit(c.focus)} aria-label={`${c.label}. ${t('results.edit')}`} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-elevated px-4 font-bold text-info hover:bg-line">
-                {c.label}<span aria-hidden="true" className="text-sm underline">{t('results.edit')}</span>
+              <button type="button" onClick={() => openEdit(c.focus)} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-elevated px-4 font-bold text-info hover:bg-line">
+                {c.label}<span className="text-sm underline">{t('results.edit')}</span>
               </button>
             </li>
           ))}
@@ -122,7 +141,7 @@ export default function ResultsList({
         </div>
       ) : (
         <>
-          <fieldset className="mb-6">
+          <fieldset className="no-print mb-6">
             <legend className="mb-2 text-xl font-bold">{t('results.sortLabel')}</legend>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {(['fit', 'price', 'ease'] as SortMode[]).map((m) => (
@@ -164,11 +183,11 @@ export default function ResultsList({
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 text-muted">
         <p>{t('results.footer')}</p>
-        <button type="button" className="btn-ghost" onClick={onStartOver}>{t('results.startOver')}</button>
+        <button type="button" className="no-print btn-ghost" onClick={onStartOver}>{t('results.startOver')}</button>
       </div>
 
       {picked.length > 0 && (
-        <div role="region" aria-label={t('compare.title')} className="sticky bottom-0 z-20 -mx-4 mt-6 border-t-2 border-info bg-surface p-3 shadow-lg">
+        <div role="region" aria-label={t('compare.title')} className="no-print sticky bottom-0 z-20 -mx-4 mt-6 border-t-2 border-info bg-surface p-3 shadow-lg">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
             <p className="font-bold" role="status">{t('compare.bar', { n: picked.length })}{picked.length < 2 && ` · ${t('compare.min')}`}</p>
             <div className="flex gap-2">

@@ -13,10 +13,14 @@ export function toRequest(a: Answers): SearchRequest {
   }
 }
 
-/** Move keyboard/screen-reader focus to a heading when a screen appears. */
+/** Set once the first screen has mounted, so only later screen changes move focus. */
+export const boot = { done: false }
+
+/** Move keyboard/screen-reader focus to a heading when a screen appears (not on first page load, so the skip link stays first). */
 export function useFocusOnMount<T extends HTMLElement>() {
   const ref = useRef<T>(null)
   useEffect(() => {
+    if (!boot.done) return
     ref.current?.focus()
     window.scrollTo({ top: 0 })
   }, [])

@@ -49,3 +49,19 @@ select.field option { background: #1A1E28; color: #F7F4EA; }
 @media (prefers-reduced-motion: reduce) {
   .duck-bob-body, .duck-ripple { animation: none !important; }
 }
+
+/* ---- Print: plain black on white, no controls ---- */
+.print-only { display: none; }
+@media print {
+  @page { margin: 14mm; }
+  html { font-size: 12pt; color-scheme: light; }
+  *, *::before, *::after { color: #000 !important; background: #fff !important; box-shadow: none !important; border-color: #888 !important; }
+  .bg-info { background: #444 !important; }
+  .print-only { display: block; }
+  .print-show[hidden] { display: block !important; }
+  header, footer, dialog, .no-print, [role="status"]:empty { display: none !important; }
+  .card { border: 1px solid #888 !important; padding: 12pt !important; }
+  .print-card { break-inside: avoid; margin-bottom: 12pt; }
+  a { text-decoration: underline; }
+  .guide-link::after, a[href^="http"].print-url::after { content: " (" attr(href) ")"; }
+}

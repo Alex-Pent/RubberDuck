@@ -3,6 +3,7 @@ import type { Answers } from '../types'
 import { useT } from '../i18n'
 import { useFocusOnMount } from '../lib'
 import Duck from './Duck'
+import { EXAMPLES } from '../options'
 import { BusinessField, ExistingToolsField, ProblemField, SizeBudgetFields } from './IntakeFields'
 
 const TOTAL = 4
@@ -19,6 +20,7 @@ export default function IntakeWizard({
   const { t } = useT()
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState<{ biz?: string; size?: string; budget?: string; problem?: string }>({})
+  const [exampleNote, setExampleNote] = useState('')
   const h1 = useFocusOnMount<HTMLHeadingElement>()
   const [stepHeading, setStepHeading] = useState<HTMLHeadingElement | null>(null)
 
@@ -44,6 +46,12 @@ export default function IntakeWizard({
     // Move focus to the new step's heading so screen readers announce it.
     setTimeout(() => stepHeading?.focus(), 0)
   }
+  const tryExample = (i: number) => {
+    setAnswers(EXAMPLES[i].answers)
+    setErrors({})
+    setExampleNote(t('intake.example.filled', { name: EXAMPLES[i].label }))
+    go(4)
+  }
   const next = () => validate(step) && go(step + 1)
   const submit = () => {
     for (const s of [1, 2, 3]) if (!validate(s)) return go(s)
@@ -65,6 +73,20 @@ export default function IntakeWizard({
           <p className="text-muted">{t('intake.intro')}</p>
         </div>
       </div>
+
+      <section aria-labelledby={step === 1 ? 'ex-h' : undefined} aria-label={step === 1 ? undefined : t('intake.example.title')} className="mb-6 empty:hidden">
+        {step === 1 && <h2 id="ex-h" className="mb-2 text-lg">{t('intake.example.title')}</h2>}
+        <ul className={`flex flex-wrap gap-2 ${step === 1 ? '' : 'hidden'}`}>
+          {EXAMPLES.map((ex, i) => (
+            <li key={ex.label}>
+              <button type="button" className="btn-secondary" onClick={() => tryExample(i)}>
+                <span aria-hidden="true">✨</span>{ex.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p role="status" className="mt-2 font-bold">{exampleNote}</p>
+      </section>
 
       <nav aria-label={t('intake.progress')} className="mb-6">
         <ol className="grid grid-cols-4 gap-2">

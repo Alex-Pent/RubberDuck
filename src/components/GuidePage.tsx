@@ -3,15 +3,16 @@ import { api } from '../api'
 import type { Answers, Guide, Tool } from '../types'
 import { useT } from '../i18n'
 import { useFocusOnMount } from '../lib'
+import { HintButton, HintNote } from './Hint'
 
 const storeKey = (id: string) => `rd.checklist.${id}`
 const loadChecked = (id: string): Record<number, boolean> => {
   try { return JSON.parse(localStorage.getItem(storeKey(id)) ?? '{}') } catch { return {} }
 }
 
-const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+const Section = ({ id, title, hint, children }: { id: string; title: string; hint?: React.ReactNode; children: React.ReactNode }) => (
   <section aria-labelledby={id} className="card">
-    <h2 id={id} className="mb-3 text-2xl">{title}</h2>
+    <h2 id={id} className="mb-3 text-2xl">{title}{hint}</h2>
     {children}
   </section>
 )
@@ -34,6 +35,7 @@ export default function GuidePage({
   const [checked, setChecked] = useState<Record<number, boolean>>(() => loadChecked(tool.id))
   const [email, setEmail] = useState('')
   const [reminded, setReminded] = useState(false)
+  const [hint, setHint] = useState<string | null>(null)
 
   useEffect(() => {
     const ctl = new AbortController()
@@ -53,9 +55,14 @@ export default function GuidePage({
 
   return (
     <div className="mx-auto max-w-3xl">
-      <button type="button" className="btn-ghost -ml-3 mb-2" onClick={onBack}><span aria-hidden="true">←</span> {t('guide.back')}</button>
+      <button type="button" className="no-print btn-ghost -ml-3 mb-2" onClick={onBack}><span aria-hidden="true">←</span> {t('guide.back')}</button>
       <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('guide.title', { name: tool.name })}</h1>
-      <p className="mb-6 text-lg text-muted">{tool.summary}</p>
+      <p className="mb-4 text-lg text-muted">{tool.summary}</p>
+      <div className="no-print mb-6">
+        <button type="button" className="btn-secondary" onClick={() => window.print()}>
+          <span aria-hidden="true">🖨</span>{t('share.printGuide')}
+        </button>
+      </div>
 
       {error && <p role="alert" className="err">{t('guide.error')}</p>}
       {!guide && !error && <p role="status" className="card">{t('guide.loading')}</p>}
@@ -95,7 +102,7 @@ export default function GuidePage({
               {guide.resources.map((r) => (
                 <li key={r.title} className="flex flex-wrap items-center gap-x-3">
                   <span className="badge">{r.type === 'video' ? '▶ ' : '📄 '}{t(r.type === 'video' ? 'guide.type.video' : 'guide.type.article')}</span>
-                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-bold text-info">
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="print-url inline-flex min-h-[44px] items-center font-bold text-info">
                     {r.title}<span className="sr-only"> {t('common.newTab')}</span>
                   </a>
                   <span className="text-muted">{r.source}</span>
@@ -104,7 +111,12 @@ export default function GuidePage({
             </ul>
           </Section>
 
-          <Section id="g-connect" title={t('guide.connect')}>
+          <Section
+            id="g-connect"
+            title={t('guide.connect')}
+            hint={<HintButton term={t('gloss.term.integration')} id="hint-integration" open={hint === 'integration'} onToggle={() => setHint(hint === 'integration' ? null : 'integration')} />}
+          >
+            <HintNote id="hint-integration" open={hint === 'integration'}>{t('gloss.integration')}</HintNote>
             {matching.length === 0 ? (
               <p>{t('guide.connect.none')}</p>
             ) : (
@@ -122,12 +134,17 @@ export default function GuidePage({
             )}
           </Section>
 
-          <Section id="g-cost" title={t('guide.cost')}>
+          <Section
+            id="g-cost"
+            title={t('guide.cost')}
+            hint={<HintButton term={t('gloss.term.trial')} id="hint-trial" open={hint === 'trial'} onToggle={() => setHint(hint === 'trial' ? null : 'trial')} />}
+          >
+            <HintNote id="hint-trial" open={hint === 'trial'}>{t('gloss.trial')}</HintNote>
             <p className="mb-2">{t('guide.cost.price', { price: tool.pricing.startingPrice })} {tool.pricing.notes}</p>
             <p className="rounded-xl bg-elevated p-3 font-bold">{t('guide.cost.try')}</p>
           </Section>
 
-          <Section id="g-remind" title={t('guide.remind')}>
+          <div className="no-print"><Section id="g-remind" title={t('guide.remind')}>
             <p className="mb-3">{t('guide.remind.body')}</p>
             {reminded ? (
               <p role="status" className="font-bold">{t('guide.remind.thanks')}</p>
@@ -140,9 +157,9 @@ export default function GuidePage({
                 <button type="submit" className="btn-secondary">{t('guide.remind.cta')}</button>
               </form>
             )}
-          </Section>
+          </Section></div>
 
-          <div className="card text-center">
+          <div className="no-print card text-center">
             <p className="mb-3 font-bold">{t('guide.second.body')}</p>
             <button type="button" className="btn-primary" onClick={onSecond}>{t('guide.second')}</button>
           </div>

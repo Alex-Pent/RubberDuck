@@ -1,5 +1,7 @@
 import type { Tool } from '../types'
+import { useId, useState } from 'react'
 import { useT, type TKey } from '../i18n'
+import { HintButton, HintNote } from './Hint'
 import { fmtDate } from '../lib'
 import Duck from './Duck'
 import ScoreBreakdown from './ScoreBreakdown'
@@ -33,10 +35,16 @@ export default function ToolCard({
   const privKey: TKey = priv >= 80 ? 'card.privacy.good' : priv >= 65 ? 'card.privacy.ok' : 'card.privacy.weak'
   const dots = tool.confidence === 'high' ? 3 : tool.confidence === 'medium' ? 2 : 1
   const titleId = `tool-${tool.id}`
+  const [hint, setHint] = useState<string | null>(null)
+  const hid = useId().replace(/:/g, '')
+  const tog = (k: string) => setHint(hint === k ? null : k)
+  const hb = (k: 'score' | 'free' | 'works' | 'confidence', className?: string) => (
+    <HintButton term={t(`gloss.term.${k}` as TKey)} id={`${hid}-${k}`} open={hint === k} onToggle={() => tog(k)} className={className} />
+  )
   const sortName = sort === 'price' ? t('results.sort.price') : t('results.sort.ease')
 
   return (
-    <article aria-labelledby={titleId} className="card">
+    <article aria-labelledby={titleId} className="card print-card">
       <div className="flex flex-wrap items-start gap-4">
         <div className="flex flex-col items-center gap-2">
           {rank === 1 && sort === 'fit' ? (
@@ -57,15 +65,18 @@ export default function ToolCard({
           <p className="mt-2 font-bold">
             {t('card.from', { price: tool.pricing.startingPrice })} ·{' '}
             <span>{tool.pricing.freeTier ? t('card.freeYes') : t('card.freeNo')}</span>
+            {hb('free')}
           </p>
+          <HintNote id={`${hid}-free`} open={hint === 'free'}>{t('gloss.free')}</HintNote>
           <p className="text-muted">{tool.pricing.notes}</p>
         </div>
-        <div className="rounded-2xl border-2 border-edge bg-elevated px-4 py-2 text-center" aria-label={`${t('card.match')}: ${tool.overallScore} ${t('card.outOf')}`}>
-          <p className="text-sm font-bold" aria-hidden="true">{t('card.match')}</p>
-          <p className="text-3xl font-bold text-ink" aria-hidden="true">{tool.overallScore}</p>
-          <p className="text-sm" aria-hidden="true">{t('card.outOf')}</p>
+        <div className="rounded-2xl border-2 border-edge bg-elevated px-4 py-2 text-center">
+          <p className="text-sm font-bold">{t('card.match')}{hb('score', '-my-3 ml-0')}</p>
+          <p className="text-3xl font-bold text-ink">{tool.overallScore}</p>
+          <p className="text-sm">{t('card.outOf')}</p>
         </div>
       </div>
+      <HintNote id={`${hid}-score`} open={hint === 'score'}>{t('gloss.score')}</HintNote>
 
       <div className="mt-4 rounded-xl bg-elevated p-4">
         <p className="font-bold">{sort === 'fit' ? t('card.why', { n: rank }) : t('card.whyAlt')}</p>
@@ -74,28 +85,30 @@ export default function ToolCard({
       </div>
 
       <ul className="mt-4 flex flex-wrap gap-2">
-        <li className="badge"><span aria-hidden="true">🔗</span>{mine ? t('card.worksWith', { name: mine }) : t('card.worksNone', { n: tool.worksWith.length })}</li>
+        <li className="badge"><span aria-hidden="true">🔗</span>{mine ? t('card.worksWith', { name: mine }) : t('card.worksNone', { n: tool.worksWith.length })}{hb('works', '-my-3 -mr-3 ml-0')}</li>
         <li className="badge"><span aria-hidden="true">⏱</span>{t('card.setup', { n: tool.setupMinutes })}</li>
         <li className="badge"><span aria-hidden="true">🔒</span>{t('card.privacy', { level: t(privKey) })}</li>
       </ul>
+      <HintNote id={`${hid}-works`} open={hint === 'works'}>{t('gloss.works')}</HintNote>
 
       <div className="mt-3"><ScoreBreakdown breakdown={tool.breakdown} /></div>
+      <p className="print-only">Website: {tool.website}</p>
 
       {tool.pairsWith.length > 0 && (
-        <section aria-label={t('card.pairs')} className="mt-4 rounded-xl border border-dashed border-edge p-4">
+        <div className="mt-4 rounded-xl border border-dashed border-edge p-4">
           <h4 className="mb-2 font-bold"><span aria-hidden="true">➕ </span>{t('card.pairs')}</h4>
           <ul className="space-y-1">
             {tool.pairsWith.map((p) => (
               <li key={p.id}><strong>{p.name}</strong>: {p.reason}</li>
             ))}
           </ul>
-        </section>
+        </div>
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
         <span>{t('card.sources')}:</span>
         {tool.sources.map((s) => (
-          <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center text-info">
+          <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="print-url inline-flex min-h-[44px] items-center text-info">
             {s.title}<span className="sr-only"> {t('card.opens')}</span>
           </a>
         ))}
@@ -103,10 +116,12 @@ export default function ToolCard({
         <span className="inline-flex items-center gap-1 font-bold text-ink">
           <span aria-hidden="true" className="tracking-widest text-info">{'●'.repeat(dots)}<span className="text-edge">{'●'.repeat(3 - dots)}</span></span>
           {t('card.confidence', { level: t(`card.confidence.${tool.confidence}` as TKey) })}
+          {hb('confidence', '-my-3')}
         </span>
       </div>
+      <HintNote id={`${hid}-confidence`} open={hint === 'confidence'}>{t('gloss.confidence')}</HintNote>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+      <div className="no-print mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
         <label className={`flex min-h-[44px] items-center gap-3 ${compareDisabled && !compared ? 'opacity-60' : 'cursor-pointer'}`}>
           <input type="checkbox" className="h-6 w-6 accent-[#FFC93C]" checked={compared} disabled={compareDisabled && !compared} onChange={onToggleCompare} />
           <span className="font-bold">{t('card.compare')}<span className="sr-only">: {tool.name}</span></span>
