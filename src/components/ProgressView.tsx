@@ -4,6 +4,7 @@ import type { SearchRequest, SearchResults, SearchStatus } from '../types'
 import { useT, type TKey } from '../i18n'
 import { useFocusOnMount } from '../lib'
 import Duck from './Duck'
+import PondProgress from './PondProgress'
 
 const TIMEOUT_MS = 90_000
 const POLL_MS = 1500
@@ -101,17 +102,7 @@ export default function ProgressView({
       <p className="mb-4 text-muted">{t('loading.sub')}</p>
 
       <div className="card">
-        <Duck size={72} animate="paddle" className="mb-4" />
-        <div
-          role="progressbar"
-          aria-label={t('loading.title')}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={status.percent}
-          className="mb-5 h-3 overflow-hidden rounded-full border border-edge bg-elevated"
-        >
-          <div className="h-full rounded-full bg-info transition-all duration-500" style={{ width: `${Math.max(4, status.percent)}%` }} />
-        </div>
+        <PondProgress percent={status.percent} className="mb-5" />
         <ol className="space-y-3">
           {STEPS.map((k, i) => {
             const state = i < current ? 'done' : i === current ? 'active' : 'wait'

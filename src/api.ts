@@ -52,7 +52,7 @@ const real = {
 
 /* ------------------------------ mock client ------------------------------ */
 
-const MOCK_DURATION_MS = 7000 // pretend the search takes ~7s so the demo stays snappy
+const MOCK_DURATION_MS = 10000 // pretend the search takes ~10s
 const MOCK_STAGES = [
   'Understanding your problem',
   'Searching for tools',

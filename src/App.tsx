@@ -3,6 +3,7 @@ import { emptyAnswers, type Answers, type SearchResults, type Tool } from './typ
 import { toRequest } from './lib'
 import { useT } from './i18n'
 import Layout from './components/Layout'
+import { DuckSprite } from './components/Duck'
 import Modal from './components/Modal'
 import IntakeWizard from './components/IntakeWizard'
 import ProgressView from './components/ProgressView'
@@ -43,6 +44,8 @@ export default function App() {
     (screen === 'results' && !results) || (screen === 'guide' && (!chosen || !results)) ? 'intake' : screen
 
   return (
+    <>
+    <DuckSprite />
     <Layout onHome={startOver} onHow={() => setDlg('how')} onSba={() => setDlg('sba')} onRank={() => setDlg('rank')}>
       {safeScreen === 'intake' && <IntakeWizard answers={answers} setAnswers={setAnswers} onSubmit={() => search(answers)} />}
       {safeScreen === 'loading' && (
@@ -100,5 +103,6 @@ export default function App() {
         </ul>
       </Modal>
     </Layout>
+    </>
   )
 }

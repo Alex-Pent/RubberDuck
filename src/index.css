@@ -45,11 +45,7 @@ select.field option { background: #1A1E28; color: #F7F4EA; }
 .duck-ripple { animation: duck-ripple 3s ease-in-out infinite; transform-origin: center; }
 @keyframes duck-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes duck-ripple { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.5; } }
-.duck-paddle { animation: duck-paddle 7s linear infinite; }
-@keyframes duck-paddle { from { left: calc(var(--duck) * -1); } to { left: 100%; } }
 
 @media (prefers-reduced-motion: reduce) {
   .duck-bob-body, .duck-ripple { animation: none !important; }
-  /* Static: park the duck in the middle of the wave instead of gliding. */
-  .duck-paddle { animation: none !important; left: 50%; transform: translateX(-50%); }
 }

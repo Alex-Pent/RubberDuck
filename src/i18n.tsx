@@ -52,6 +52,8 @@ const en = {
   'loading.title': 'Searching for tools that fit',
   'loading.sub': 'This can take up to a minute. Please keep this page open.',
   'loading.cancel': 'Cancel',
+  'loading.pond': 'Searching for tools',
+  'loading.working': 'Working…',
   'loading.step.understand': 'Understanding your problem',
   'loading.step.search': 'Searching for tools',
   'loading.step.price': 'Checking prices and integrations',
