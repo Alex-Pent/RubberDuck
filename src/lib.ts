@@ -1,0 +1,32 @@
+import { useEffect, useRef } from 'react'
+import type { Answers, SearchRequest } from './types'
+
+export function toRequest(a: Answers): SearchRequest {
+  return {
+    businessType: a.businessType === 'Other' && a.businessOther.trim() ? a.businessOther.trim() : a.businessType,
+    size: a.size,
+    budget: a.budget,
+    category: a.category || undefined,
+    freeText: a.freeText.trim() || undefined,
+    existingTools: a.existingTools,
+  }
+}
+
+/** Move keyboard/screen-reader focus to a heading when a screen appears. */
+export function useFocusOnMount<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  useEffect(() => {
+    ref.current?.focus()
+    window.scrollTo({ top: 0 })
+  }, [])
+  return ref
+}
+
+export const fmtDate = (iso: string, lang = 'en') => {
+  const d = new Date(iso)
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(lang, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+export function levelFor(n: number): 'great' | 'good' | 'fair' | 'weak' {
+  return n >= 85 ? 'great' : n >= 70 ? 'good' : n >= 55 ? 'fair' : 'weak'
+}
