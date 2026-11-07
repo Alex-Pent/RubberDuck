@@ -1,23 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+export type Lang = 'en'
 
-export type Lang = 'en' | 'es'
-
-/**
- * All user-facing copy lives here as keys. Spanish falls back to English for any
- * missing key, so translators can fill `es` in gradually.
- */
+/** All user-facing copy lives here as keys. */
 const en = {
   'app.name': 'RubberDuck',
   'app.tagline': 'Find the right AI tool for your business, in plain English.',
   'nav.home': 'RubberDuck home',
   'nav.how': 'How it works',
   'nav.sba': 'SBA resources',
-  'nav.lang': 'Language',
   'nav.skip': 'Skip to main content',
   'nav.main': 'Main navigation',
 
-  'intake.title': "Tell us what's slowing you down",
-  'intake.intro': 'Answer a few quick questions. It takes about two minutes. No sign-up needed.',
+  'intake.title': "Tell the duck what's slowing you down",
+  'intake.intro': 'Just like talking to a rubber duck, say it out loud and the answer gets clearer. A few quick questions, about two minutes, no sign-up.',
   'intake.step': 'Step {n} of {total}',
   'intake.progress': 'Progress',
   'intake.s1': 'Your business',
@@ -31,7 +25,7 @@ const en = {
   'intake.size': 'How many people work in your business?',
   'intake.budget': 'How much could you spend each month on this tool?',
   'intake.problem': 'What is the problem?',
-  'intake.problem.chips': 'Pick the closest topic',
+  'intake.problem.chips': 'Pick the topics that fit (you can pick more than one)',
   'intake.problem.text': 'Or describe it in your own words',
   'intake.problem.ph': 'Tell us what is eating up your time…',
   'intake.problem.examples': 'Tap an example to start:',
@@ -46,6 +40,8 @@ const en = {
   'intake.submit': 'Find my tools',
   'intake.err.biz': 'Please choose your type of business.',
   'intake.err.bizOther': 'Please tell us what kind of business you run.',
+  'intake.err.size': 'Please choose how many people work in your business.',
+  'intake.err.budget': 'Please choose a monthly budget. "Not sure" is fine.',
   'intake.err.problem': 'Please pick a topic or describe the problem. Either one is fine.',
   'intake.mic': 'Speak your answer',
   'intake.mic.stop': 'Stop listening',
@@ -92,6 +88,7 @@ const en = {
   'results.startOver': 'Start over',
 
   'card.rank': 'Rank {n}',
+  'card.best': 'Best match',
   'card.match': 'Match score',
   'card.outOf': 'out of 100',
   'card.from': 'From {price}',
@@ -114,6 +111,7 @@ const en = {
   'card.compare': 'Compare',
   'card.compareHint': 'Pick up to 3',
   'card.choose': 'Choose this tool',
+  'card.guide': 'How to use it well',
   'card.pairs': 'Combine for more',
   'card.pairs.add': 'Add as a second tool',
   'card.sources': 'Sources',
@@ -208,70 +206,23 @@ const en = {
   'sba.sba': 'SBA.gov – guides, loans and local offices',
   'sba.sbdc': 'Find a local SBDC – free one-on-one advising',
   'sba.score': 'SCORE – free mentors who have run businesses',
+  'footer.credit': 'Made by The Rubber Ducks. Quack.',
   'common.close': 'Close',
   'common.loading': 'Loading…',
   'common.newTab': '(opens in a new tab)',
 }
 
-const es: Partial<Record<keyof typeof en, string>> = {
-  'app.tagline': 'Encuentre la herramienta de IA adecuada para su negocio, en lenguaje sencillo.',
-  'nav.how': 'Cómo funciona',
-  'nav.sba': 'Recursos de la SBA',
-  'nav.lang': 'Idioma',
-  'nav.skip': 'Saltar al contenido principal',
-  'intake.title': 'Cuéntenos qué le quita tiempo',
-  'intake.back': 'Atrás',
-  'intake.next': 'Siguiente',
-  'intake.submit': 'Buscar mis herramientas',
-  'loading.title': 'Buscando herramientas para usted',
-  'loading.cancel': 'Cancelar',
-  'card.choose': 'Elegir esta herramienta',
-  'results.footer': 'Las clasificaciones no son anuncios pagados.',
-}
-
 export type TKey = keyof typeof en
-const dict: Record<Lang, Partial<Record<TKey, string>>> = { en, es }
 
-interface I18n {
-  lang: Lang
-  setLang: (l: Lang) => void
-  t: (key: TKey, vars?: Record<string, string | number>) => string
-}
-const Ctx = createContext<I18n | null>(null)
+const lang: Lang = 'en'
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    try {
-      return (localStorage.getItem('rd.lang') as Lang) || 'en'
-    } catch {
-      return 'en'
-    }
-  })
-  useEffect(() => {
-    document.documentElement.lang = lang
-  }, [lang])
-  const setLang = useCallback((l: Lang) => {
-    setLangState(l)
-    try {
-      localStorage.setItem('rd.lang', l)
-    } catch {
-      /* ignore */
-    }
-  }, [])
-  const t = useCallback<I18n['t']>(
-    (key, vars) => {
-      let s = dict[lang][key] ?? en[key] ?? key
-      if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v))
-      return s
-    },
-    [lang],
-  )
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t])
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
+function t(key: TKey, vars?: Record<string, string | number>): string {
+  let s: string = en[key] ?? key
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v))
+  return s
 }
 
+/** Copy lives in `en` above as keys, so another language can be added later. */
 export function useT() {
-  const c = useContext(Ctx)
-  if (!c) throw new Error('useT outside I18nProvider')
-  return c
+  return { lang, t }
 }

@@ -17,7 +17,6 @@ export const CATEGORIES = [
   'Bookkeeping & invoicing',
   'Reviews & reputation',
   'Hiring & staff',
-  'Other',
 ]
 export const EXAMPLE_PROMPTS = [
   "I miss calls when I'm on a job",

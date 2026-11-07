@@ -4,6 +4,7 @@ import { BUDGETS, BUSINESS_TYPES, CATEGORIES, EXAMPLE_PROMPTS, SIZES } from '../
 import { useT } from '../i18n'
 import ChipInput from './ChipInput'
 import MicButton from './MicButton'
+import Duck from './Duck'
 
 type Set = <K extends keyof Answers>(k: K, v: Answers[K]) => void
 interface P { a: Answers; set: Set; error?: string; idPrefix?: string }
@@ -39,9 +40,9 @@ export function BusinessField({ a, set, error, idPrefix = '' }: P) {
   )
 }
 
-function RadioTiles({ legend, name, options, value, onChange }: { legend: string; name: string; options: string[]; value: string; onChange: (v: string) => void }) {
+function RadioTiles({ legend, name, options, value, onChange, error }: { legend: string; name: string; options: string[]; value: string; onChange: (v: string) => void; error?: string }) {
   return (
-    <fieldset>
+    <fieldset aria-describedby={error ? `${name}-err` : undefined}>
       <legend className="mb-2 text-xl font-bold">{legend}</legend>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {options.map((o) => (
@@ -51,16 +52,17 @@ function RadioTiles({ legend, name, options, value, onChange }: { legend: string
           </label>
         ))}
       </div>
+      {error && <ErrorMsg id={`${name}-err`}>{error}</ErrorMsg>}
     </fieldset>
   )
 }
 
-export function SizeBudgetFields({ a, set, idPrefix = '' }: P) {
+export function SizeBudgetFields({ a, set, idPrefix = '', errors }: P & { errors?: { size?: string; budget?: string } }) {
   const { t } = useT()
   return (
     <div className="space-y-8">
-      <RadioTiles legend={t('intake.size')} name={`${idPrefix}size`} options={SIZES} value={a.size} onChange={(v) => set('size', v)} />
-      <RadioTiles legend={t('intake.budget')} name={`${idPrefix}budget`} options={BUDGETS} value={a.budget} onChange={(v) => set('budget', v)} />
+      <RadioTiles legend={t('intake.size')} name={`${idPrefix}size`} options={SIZES} value={a.size} onChange={(v) => set('size', v)} error={errors?.size} />
+      <RadioTiles legend={t('intake.budget')} name={`${idPrefix}budget`} options={BUDGETS} value={a.budget} onChange={(v) => set('budget', v)} error={errors?.budget} />
     </div>
   )
 }
@@ -78,16 +80,18 @@ export function ProblemField({ a, set, error, idPrefix = '' }: P) {
             <button
               key={c}
               type="button"
-              aria-pressed={a.category === c}
-              onClick={() => set('category', a.category === c ? '' : c)}
-              className={`min-h-[44px] rounded-full border-2 px-4 py-2 font-bold ${a.category === c ? 'border-accent bg-accent text-white' : 'border-[#6B7280] bg-white hover:bg-accent-soft'}`}
+              aria-pressed={a.categories.includes(c)}
+              onClick={() => set('categories', a.categories.includes(c) ? a.categories.filter((x) => x !== c) : [...a.categories, c])}
+              className={`min-h-[44px] rounded-full border-2 px-4 py-2 font-bold ${a.categories.includes(c) ? 'border-accent bg-accent text-onduck' : 'border-edge bg-surface hover:bg-elevated'}`}
             >
-              {a.category === c && <span aria-hidden="true">✓ </span>}{c}
+              {c}
             </button>
           ))}
         </div>
       </fieldset>
-      <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <Duck size={72} className="hidden shrink-0 sm:block" />
+        <div className="relative flex-1 rounded-3xl border-2 border-edge bg-elevated p-4 sm:before:absolute sm:before:-left-[11px] sm:before:top-8 sm:before:h-5 sm:before:w-5 sm:before:rotate-45 sm:before:border-b-2 sm:before:border-l-2 sm:before:border-edge sm:before:bg-elevated sm:before:content-['']">
         <label htmlFor={taId} className="mb-2 block text-xl font-bold">{t('intake.problem.text')}</label>
         <textarea
           id={taId}
@@ -104,12 +108,13 @@ export function ProblemField({ a, set, error, idPrefix = '' }: P) {
         <ul className="flex flex-wrap gap-2">
           {EXAMPLE_PROMPTS.map((ex) => (
             <li key={ex}>
-              <button type="button" onClick={() => set('freeText', ex)} className="min-h-[44px] rounded-xl border-2 border-dashed border-[#6B7280] bg-white px-4 py-2 text-left hover:bg-accent-soft">
+              <button type="button" onClick={() => set('freeText', ex)} className="min-h-[44px] rounded-xl border-2 border-dashed border-edge bg-surface px-4 py-2 text-left hover:bg-line">
                 “{ex}”
               </button>
             </li>
           ))}
         </ul>
+        </div>
       </div>
       {error && <ErrorMsg id={`${idPrefix}problem-err`}>{error}</ErrorMsg>}
     </div>

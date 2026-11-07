@@ -7,7 +7,7 @@ const List = ({ items }: { items: string[] }) => (
   <ul className="list-disc space-y-1 pl-5">{items.map((i) => <li key={i}>{i}</li>)}</ul>
 )
 
-export default function CompareTable({ tools, onChoose }: { tools: Tool[]; onChoose: (t: Tool) => void }) {
+export default function CompareTable({ tools, onChoose: onGuide }: { tools: Tool[]; onChoose: (t: Tool) => void }) {
   const { t } = useT()
   const yn = (b: boolean) => (b ? t('compare.yes') : t('compare.no'))
   const rows: Row[] = [
@@ -20,6 +20,16 @@ export default function CompareTable({ tools, onChoose }: { tools: Tool[]; onCho
     { label: t('compare.row.pros'), cell: (x) => <List items={x.pros} /> },
     { label: t('compare.row.cons'), cell: (x) => <List items={x.cons} /> },
   ]
+  const Actions = ({ x, stacked }: { x: Tool; stacked?: boolean }) => (
+    <div className={`flex gap-3 ${stacked ? 'flex-col' : 'flex-col items-start'}`}>
+      <a href={x.website} target="_blank" rel="noopener noreferrer" className={`btn-primary ${stacked ? 'w-full' : ''}`}>
+        {t('card.choose')}<span aria-hidden="true">↗</span><span className="sr-only">: {x.name} {t('card.opens')}</span>
+      </a>
+      <button type="button" className={`btn-secondary ${stacked ? 'w-full' : ''}`} onClick={() => onGuide(x)}>
+        {t('card.guide')}<span className="sr-only">: {x.name}</span>
+      </button>
+    </div>
+  )
   return (
     <>
       {/* Wide screens: a real table with row and column headers. */}
@@ -29,7 +39,7 @@ export default function CompareTable({ tools, onChoose }: { tools: Tool[]; onCho
           <thead>
             <tr>
               <td className="p-3" />
-              {tools.map((x) => <th key={x.id} scope="col" className="border-b-2 border-accent p-3 text-xl">{x.name}</th>)}
+              {tools.map((x) => <th key={x.id} scope="col" className="border-b-2 border-edge p-3 text-xl">{x.name}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -43,7 +53,7 @@ export default function CompareTable({ tools, onChoose }: { tools: Tool[]; onCho
               <td />
               {tools.map((x) => (
                 <td key={x.id} className="p-3">
-                  <button type="button" className="btn-primary" onClick={() => onChoose(x)}>{t('card.choose')}<span className="sr-only">: {x.name}</span></button>
+                  <Actions x={x} />
                 </td>
               ))}
             </tr>
@@ -64,7 +74,7 @@ export default function CompareTable({ tools, onChoose }: { tools: Tool[]; onCho
                 </div>
               ))}
             </dl>
-            <button type="button" className="btn-primary mt-4 w-full" onClick={() => onChoose(x)}>{t('card.choose')}<span className="sr-only">: {x.name}</span></button>
+            <div className="mt-4"><Actions x={x} stacked /></div>
           </section>
         ))}
       </div>

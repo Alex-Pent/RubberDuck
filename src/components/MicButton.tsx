@@ -19,7 +19,7 @@ const getSR = (): (new () => SR) | null => {
 
 /** Appends finished phrases to the text box. Hidden if the browser can't do it. */
 export default function MicButton({ onText }: { onText: (phrase: string) => void }) {
-  const { t, lang } = useT()
+  const { t } = useT()
   const [listening, setListening] = useState(false)
   const [error, setError] = useState(false)
   const rec = useRef<SR | null>(null)
@@ -32,7 +32,7 @@ export default function MicButton({ onText }: { onText: (phrase: string) => void
     if (listening) return rec.current?.stop()
     setError(false)
     const r = new Ctor()
-    r.lang = lang === 'es' ? 'es-US' : 'en-US'
+    r.lang = 'en-US'
     r.interimResults = false
     r.continuous = false
     r.onresult = (e) => {

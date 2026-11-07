@@ -3,6 +3,7 @@ import { api } from '../api'
 import type { SearchRequest, SearchResults, SearchStatus } from '../types'
 import { useT, type TKey } from '../i18n'
 import { useFocusOnMount } from '../lib'
+import Duck from './Duck'
 
 const TIMEOUT_MS = 90_000
 const POLL_MS = 1500
@@ -82,6 +83,7 @@ export default function ProgressView({
     const isTimeout = phase === 'timeout'
     return (
       <div className="mx-auto max-w-xl text-center">
+        <Duck size={96} className="mx-auto mb-3" />
         <h1 ref={h1} tabIndex={-1} className="mb-3 text-3xl">{t(isTimeout ? 'loading.timeout.title' : 'loading.error.title')}</h1>
         <p role="alert" className="mb-6 text-lg text-muted">{t(isTimeout ? 'loading.timeout.body' : 'loading.error.body')}</p>
         <div className="flex flex-col items-center gap-3">
@@ -96,25 +98,26 @@ export default function ProgressView({
   return (
     <div className="mx-auto max-w-2xl">
       <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('loading.title')}</h1>
-      <p className="mb-6 text-muted">{t('loading.sub')}</p>
+      <p className="mb-4 text-muted">{t('loading.sub')}</p>
 
       <div className="card">
+        <Duck size={72} animate="paddle" className="mb-4" />
         <div
           role="progressbar"
           aria-label={t('loading.title')}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={status.percent}
-          className="mb-5 h-3 overflow-hidden rounded-full bg-line"
+          className="mb-5 h-3 overflow-hidden rounded-full border border-edge bg-elevated"
         >
-          <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${Math.max(4, status.percent)}%` }} />
+          <div className="h-full rounded-full bg-info transition-all duration-500" style={{ width: `${Math.max(4, status.percent)}%` }} />
         </div>
         <ol className="space-y-3">
           {STEPS.map((k, i) => {
             const state = i < current ? 'done' : i === current ? 'active' : 'wait'
             return (
               <li key={k} aria-current={state === 'active' ? 'step' : undefined} className={`flex min-h-[44px] items-center gap-3 text-lg ${state === 'wait' ? 'text-muted' : 'font-bold'}`}>
-                <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-base ${state === 'done' ? 'border-accent bg-accent text-white' : state === 'active' ? 'border-accent text-accent' : 'border-[#6B7280]'}`}>
+                <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-base ${state === 'done' ? 'border-accent bg-accent text-onduck' : state === 'active' ? 'border-info text-info' : 'border-edge'}`}>
                   {state === 'done' ? '✓' : state === 'active' ? '…' : i + 1}
                 </span>
                 <span>{t(k)}</span>

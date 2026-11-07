@@ -23,6 +23,13 @@ export default function Modal({
     if (open && !d.open) d.showModal()
     if (!open && d.open) d.close()
   }, [open])
+  // Stop the page behind the dialog from scrolling.
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [open])
   const id = `dlg-${title.replace(/\W+/g, '-')}`
   return (
     <dialog
@@ -30,7 +37,7 @@ export default function Modal({
       aria-labelledby={id}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className={`m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-auto rounded-2xl bg-white p-0 text-ink shadow-xl ${wide ? 'max-w-5xl' : 'max-w-xl'}`}
+      className={`m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-auto rounded-2xl bg-surface p-0 text-ink shadow-xl ${wide ? 'max-w-5xl' : 'max-w-xl'}`}
     >
       {open && (
         <div className="p-5 sm:p-8">

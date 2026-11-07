@@ -36,9 +36,9 @@ export default function ChipInput({
       {value.length > 0 && (
         <ul className="mb-3 flex flex-wrap gap-2" aria-label={t('intake.existing')}>
           {value.map((v) => (
-            <li key={v} className="flex items-center rounded-full bg-accent-soft pl-4 font-bold text-accent">
+            <li key={v} className="flex items-center rounded-full border border-edge bg-elevated pl-4 font-bold text-ink">
               {v}
-              <button type="button" onClick={() => remove(v)} aria-label={t('intake.existing.remove', { name: v })} className="ml-1 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-lg hover:bg-white">
+              <button type="button" onClick={() => remove(v)} aria-label={t('intake.existing.remove', { name: v })} className="ml-1 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-lg hover:bg-surface">
                 <span aria-hidden="true">×</span>
               </button>
             </li>
@@ -72,7 +72,7 @@ export default function ChipInput({
             else if (e.key === 'Backspace' && !text && value.length) remove(value[value.length - 1])
           }}
         />
-        <ul id={listId} role="listbox" aria-label="Suggestions" hidden={!(open && suggestions.length > 0)} className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border-2 border-[#6B7280] bg-white shadow-lg">
+        <ul id={listId} role="listbox" aria-label="Suggestions" hidden={!(open && suggestions.length > 0)} className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border-2 border-edge bg-surface shadow-lg">
           {suggestions.map((s, i) => (
             <li
               key={s}
@@ -80,7 +80,7 @@ export default function ChipInput({
               role="option"
               aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); add(s) }}
-              className={`flex min-h-[44px] cursor-pointer items-center px-4 ${i === active ? 'bg-accent text-white' : 'hover:bg-accent-soft'}`}
+              className={`flex min-h-[44px] cursor-pointer items-center px-4 ${i === active ? 'bg-accent text-onduck' : 'hover:bg-elevated'}`}
             >
               {s}
             </li>
@@ -90,7 +90,7 @@ export default function ChipInput({
       <p id={`${inputId}-help`} className="mt-2 text-muted">{t('intake.existing.help')}</p>
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Quick add">
         {TOOL_SUGGESTIONS.filter((s) => !has(s)).map((s) => (
-          <button key={s} type="button" onClick={() => add(s)} aria-label={t('intake.existing.add', { name: s })} className="min-h-[44px] rounded-full border-2 border-dashed border-[#6B7280] bg-white px-4 font-bold hover:bg-accent-soft">
+          <button key={s} type="button" onClick={() => add(s)} aria-label={t('intake.existing.add', { name: s })} className="min-h-[44px] rounded-full border-2 border-dashed border-edge bg-surface px-4 font-bold hover:bg-elevated">
             + {s}
           </button>
         ))}

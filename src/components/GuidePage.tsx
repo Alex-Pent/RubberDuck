@@ -68,14 +68,14 @@ export default function GuidePage({
 
           <Section id="g-setup" title={t('guide.setup')}>
             <p className="mb-3 font-bold" role="status">{t('guide.setup.progress', { done, total: guide.setupSteps.length })}</p>
-            <div className="mb-4 h-3 overflow-hidden rounded-full border border-[#6B7280]" aria-hidden="true">
-              <div className="h-full bg-accent transition-all" style={{ width: `${(done / guide.setupSteps.length) * 100}%` }} />
+            <div className="mb-4 h-3 overflow-hidden rounded-full border border-edge" aria-hidden="true">
+              <div className="h-full bg-info transition-all" style={{ width: `${(done / guide.setupSteps.length) * 100}%` }} />
             </div>
             <ul className="space-y-3">
               {guide.setupSteps.map((s, i) => (
                 <li key={s.title}>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-xl p-2 hover:bg-cream">
-                    <input type="checkbox" className="mt-1 h-6 w-6 shrink-0 accent-[#0F5F5C]" checked={!!checked[i]} onChange={() => toggle(i)} />
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl p-2 hover:bg-elevated">
+                    <input type="checkbox" className="mt-1 h-6 w-6 shrink-0 accent-[#FFC93C]" checked={!!checked[i]} onChange={() => toggle(i)} />
                     <span>
                       <span className={`block font-bold ${checked[i] ? 'line-through' : ''}`}>{s.title} <span className="font-normal text-muted">· {t('guide.setup.minutes', { n: s.minutes })}</span></span>
                       <span className="block text-muted">{s.detail}</span>
@@ -95,7 +95,7 @@ export default function GuidePage({
               {guide.resources.map((r) => (
                 <li key={r.title} className="flex flex-wrap items-center gap-x-3">
                   <span className="badge">{r.type === 'video' ? '▶ ' : '📄 '}{t(r.type === 'video' ? 'guide.type.video' : 'guide.type.article')}</span>
-                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-bold text-accent">
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-bold text-info">
                     {r.title}<span className="sr-only"> {t('common.newTab')}</span>
                   </a>
                   <span className="text-muted">{r.source}</span>
@@ -124,7 +124,7 @@ export default function GuidePage({
 
           <Section id="g-cost" title={t('guide.cost')}>
             <p className="mb-2">{t('guide.cost.price', { price: tool.pricing.startingPrice })} {tool.pricing.notes}</p>
-            <p className="rounded-xl bg-accent-soft p-3 font-bold">{t('guide.cost.try')}</p>
+            <p className="rounded-xl bg-elevated p-3 font-bold">{t('guide.cost.try')}</p>
           </Section>
 
           <Section id="g-remind" title={t('guide.remind')}>

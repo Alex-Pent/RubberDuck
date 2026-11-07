@@ -4,12 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#FFF9F0',
-        ink: '#1F2933',
-        muted: '#4A5560',
-        // One accent: deep teal. #0F5F5C on white = 7.6:1
-        accent: { DEFAULT: '#0F5F5C', dark: '#0A4745', soft: '#E3F2F0' },
-        line: '#D9D2C5',
+        page: '#0F1219',
+        surface: '#1A1E28',
+        elevated: '#252A37',
+        line: '#343A4A',
+        edge: '#7B8398', // borders of form controls: 4.6:1 on surface, meets 3:1 for UI components
+        ink: '#F7F4EA',
+        muted: '#A9AFBD',
+        accent: { DEFAULT: '#FFC93C', dark: '#FFD76B' }, // duck yellow: primary buttons, selected states, rank 1
+        orange: '#FF8A3D',
+        info: '#3DB8C9',
+        success: '#5BD38A',
+        danger: '#FF6B6B',
+        onduck: '#0F1219', // dark text on yellow
       },
       fontFamily: { sans: ['"Atkinson Hyperlegible"', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'] },
     },

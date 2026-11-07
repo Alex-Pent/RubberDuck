@@ -6,7 +6,8 @@ export function toRequest(a: Answers): SearchRequest {
     businessType: a.businessType === 'Other' && a.businessOther.trim() ? a.businessOther.trim() : a.businessType,
     size: a.size,
     budget: a.budget,
-    category: a.category || undefined,
+    // The API takes one string, so several topics are joined with commas.
+    category: a.categories.length ? a.categories.join(', ') : undefined,
     freeText: a.freeText.trim() || undefined,
     existingTools: a.existingTools,
   }

@@ -27,8 +27,8 @@ export default function ScoreBreakdown({ breakdown }: { breakdown: Breakdown }) 
                   <span>{t(`breakdown.${k}` as TKey)}</span>
                   <span className="font-bold">{v}/100 · {level}</span>
                 </div>
-                <div role="meter" aria-label={t(`breakdown.${k}` as TKey)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={v} aria-valuetext={`${v} out of 100, ${level}`} className="mt-1 h-3 overflow-hidden rounded-full border border-[#6B7280] bg-white">
-                  <div className="h-full bg-accent" style={{ width: `${v}%` }} />
+                <div role="meter" aria-label={t(`breakdown.${k}` as TKey)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={v} aria-valuetext={`${v} out of 100, ${level}`} className="mt-1 h-3 overflow-hidden rounded-full border border-edge bg-surface">
+                  <div className="h-full bg-info" style={{ width: `${v}%` }} />
                 </div>
               </li>
             )

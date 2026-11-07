@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Answers } from '../types'
 import { useT } from '../i18n'
 import { useFocusOnMount } from '../lib'
+import Duck from './Duck'
 import { BusinessField, ExistingToolsField, ProblemField, SizeBudgetFields } from './IntakeFields'
 
 const TOTAL = 4
@@ -17,7 +18,7 @@ export default function IntakeWizard({
 }) {
   const { t } = useT()
   const [step, setStep] = useState(1)
-  const [errors, setErrors] = useState<{ biz?: string; problem?: string }>({})
+  const [errors, setErrors] = useState<{ biz?: string; size?: string; budget?: string; problem?: string }>({})
   const h1 = useFocusOnMount<HTMLHeadingElement>()
   const [stepHeading, setStepHeading] = useState<HTMLHeadingElement | null>(null)
 
@@ -30,7 +31,11 @@ export default function IntakeWizard({
       if (!answers.businessType) e.biz = t('intake.err.biz')
       else if (answers.businessType === 'Other' && !answers.businessOther.trim()) e.biz = t('intake.err.bizOther')
     }
-    if (s === 3 && !answers.category && !answers.freeText.trim()) e.problem = t('intake.err.problem')
+    if (s === 2) {
+      if (!answers.size) e.size = t('intake.err.size')
+      if (!answers.budget) e.budget = t('intake.err.budget')
+    }
+    if (s === 3 && answers.categories.length === 0 && !answers.freeText.trim()) e.problem = t('intake.err.problem')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -41,14 +46,25 @@ export default function IntakeWizard({
   }
   const next = () => validate(step) && go(step + 1)
   const submit = () => {
-    for (const s of [1, 3]) if (!validate(s)) return go(s)
+    for (const s of [1, 2, 3]) if (!validate(s)) return go(s)
     onSubmit()
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('intake.title')}</h1>
-      <p className="mb-6 text-muted">{t('intake.intro')}</p>
+      <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+        <div className="relative shrink-0">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 200 200" className="absolute -inset-6 h-[calc(100%+3rem)] w-[calc(100%+3rem)]">
+            <circle cx="100" cy="125" r="55" fill="none" stroke="#3DB8C9" strokeOpacity="0.18" strokeWidth="2" />
+            <circle cx="100" cy="125" r="75" fill="none" stroke="#3DB8C9" strokeOpacity="0.1" strokeWidth="2" />
+          </svg>
+          <Duck size={160} animate="bob" className="relative" />
+        </div>
+        <div className="relative rounded-2xl border-2 border-line bg-surface p-5 shadow-sm sm:before:absolute sm:before:-left-[11px] sm:before:top-1/2 sm:before:-mt-2.5 sm:before:h-5 sm:before:w-5 sm:before:rotate-45 sm:before:border-b-2 sm:before:border-l-2 sm:before:border-line sm:before:bg-surface sm:before:content-['']">
+          <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('intake.title')}</h1>
+          <p className="text-muted">{t('intake.intro')}</p>
+        </div>
+      </div>
 
       <nav aria-label={t('intake.progress')} className="mb-6">
         <ol className="grid grid-cols-4 gap-2">
@@ -76,7 +92,7 @@ export default function IntakeWizard({
       >
         <h2 ref={setStepHeading} tabIndex={-1} className="text-2xl">{titles[step - 1]}</h2>
         {step === 1 && <BusinessField a={answers} set={set} error={errors.biz} />}
-        {step === 2 && <SizeBudgetFields a={answers} set={set} />}
+        {step === 2 && <SizeBudgetFields a={answers} set={set} errors={errors} />}
         {step === 3 && <ProblemField a={answers} set={set} error={errors.problem} />}
         {step === 4 && <ExistingToolsField a={answers} set={set} />}
 

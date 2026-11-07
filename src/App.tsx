@@ -92,7 +92,7 @@ export default function App() {
         <ul className="space-y-1">
           {([['sba.sba', 'https://www.sba.gov/'], ['sba.sbdc', 'https://www.sba.gov/local-assistance/resource-partners/small-business-development-centers-sbdc'], ['sba.score', 'https://www.score.org/']] as const).map(([k, href]) => (
             <li key={k}>
-              <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-bold text-accent">
+              <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-bold text-info">
                 {t(k)}<span className="sr-only"> {t('common.newTab')}</span>
               </a>
             </li>

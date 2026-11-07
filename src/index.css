@@ -3,36 +3,53 @@
 @tailwind utilities;
 
 @layer base {
-  html { font-size: 112.5%; -webkit-text-size-adjust: 100%; } /* 18px body: easy to read */
-  body { @apply bg-cream text-ink font-sans leading-relaxed antialiased; }
+  html { color-scheme: dark; font-size: 112.5%; -webkit-text-size-adjust: 100%; } /* 18px body: easy to read */
+  body { @apply bg-page text-ink font-sans leading-relaxed antialiased; }
   h1, h2, h3 { @apply font-bold leading-tight; }
-  :focus-visible { outline: 3px solid #0F5F5C; outline-offset: 3px; border-radius: 4px; }
-  .on-dark :focus-visible, [data-on-dark] :focus-visible { outline-color: #fff; }
+  :focus-visible { outline: 3px solid #FFC93C; outline-offset: 3px; border-radius: 4px; }
+  /* Headings we focus from code (not tab stops) don't need a ring. */
+  [tabindex="-1"]:focus { outline: none; }
   a { @apply underline underline-offset-2; }
-  dialog::backdrop { background: rgba(31, 41, 51, 0.6); }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
 }
 
 @layer components {
-  .btn { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2 font-bold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-primary { @apply btn bg-accent text-white hover:bg-accent-dark; }
-  .btn-secondary { @apply btn border-2 border-accent bg-white text-accent hover:bg-accent-soft; }
-  .btn-ghost { @apply btn text-accent hover:bg-accent-soft; }
-  .card { @apply rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6; }
-  .field { @apply min-h-[44px] w-full rounded-xl border-2 border-[#6B7280] bg-white px-4 py-2 text-ink placeholder:text-[#5B6470]; }
-  .choice { @apply relative flex min-h-[44px] cursor-pointer items-center justify-center rounded-xl border-2 border-[#6B7280] bg-white px-4 py-2 text-center font-bold text-ink hover:bg-accent-soft; }
-  .badge { @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-cream px-3 py-1 text-sm font-bold text-ink; }
-  .err { @apply mt-2 flex items-start gap-2 font-bold text-[#9B1C1C]; }
+  .btn { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-6 py-2 font-bold no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-accent text-onduck hover:bg-accent-dark; }
+  .btn-secondary { @apply btn border-2 border-edge bg-transparent text-ink hover:bg-elevated; }
+  .btn-ghost { @apply btn text-info hover:bg-elevated; }
+  .card { @apply rounded-3xl border border-line bg-surface p-5 shadow-sm sm:p-6; }
+  .field { @apply min-h-[44px] w-full rounded-2xl border-2 border-edge bg-surface px-4 py-2 text-ink placeholder:text-muted; }
+  .choice { @apply relative flex min-h-[44px] cursor-pointer items-center justify-center rounded-2xl border-2 border-edge bg-surface px-4 py-2 text-center font-bold text-ink hover:bg-elevated; }
+  .badge { @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-elevated px-3 py-1 text-sm font-bold text-ink; }
+  .err { @apply mt-2 flex items-start gap-2 font-bold text-danger; }
 }
 
-/* Radio/checkbox "choice" tiles: the real input stays focusable, the label shows state. */
+/* Radio "choice" tiles: the real input stays focusable; selection shows as a yellow fill with dark text. */
 .choice input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; }
-.choice:has(input:checked) { background: #0F5F5C; border-color: #0F5F5C; color: #fff; }
-.choice:has(input:focus-visible) { outline: 3px solid #0F5F5C; outline-offset: 3px; }
+.choice:has(input:checked) { background: #FFC93C; border-color: #FFC93C; color: #0F1219; }
+.choice { white-space: nowrap; }
+.choice:has(input:focus-visible) { outline: 3px solid #FFC93C; outline-offset: 3px; }
+select.field option { background: #1A1E28; color: #F7F4EA; }
 
-.skeleton { background: linear-gradient(90deg, #ece6d9 25%, #f6f1e6 50%, #ece6d9 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
+.skeleton { background: linear-gradient(90deg, #1A1E28 25%, #252A37 50%, #1A1E28 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
   .skeleton { animation: none; }
+}
+
+/* Duck animations */
+.duck-bob-body { animation: duck-bob 3s ease-in-out infinite; }
+.duck-ripple { animation: duck-ripple 3s ease-in-out infinite; transform-origin: center; }
+@keyframes duck-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes duck-ripple { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.5; } }
+.duck-paddle { animation: duck-paddle 7s linear infinite; }
+@keyframes duck-paddle { from { left: calc(var(--duck) * -1); } to { left: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .duck-bob-body, .duck-ripple { animation: none !important; }
+  /* Static: park the duck in the middle of the wave instead of gliding. */
+  .duck-paddle { animation: none !important; left: 50%; transform: translateX(-50%); }
 }

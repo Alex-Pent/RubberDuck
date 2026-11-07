@@ -68,7 +68,7 @@ export interface Answers {
   businessOther: string
   size: string
   budget: string
-  category: string
+  categories: string[]
   freeText: string
   existingTools: string[]
 }
@@ -78,7 +78,7 @@ export const emptyAnswers: Answers = {
   businessOther: '',
   size: '',
   budget: '',
-  category: '',
+  categories: [],
   freeText: '',
   existingTools: [],
 }

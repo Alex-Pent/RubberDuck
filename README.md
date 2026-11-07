@@ -46,7 +46,7 @@ Notes:
 src/
   api.ts                 typed client + mock/real switch (USE_MOCK)
   types.ts               shared types and API shapes
-  i18n.tsx               EN/ES keys + toggle (Spanish falls back to English)
+  i18n.tsx               all copy as keys (English only)
   mock/data.ts           3 scenarios x 4 tools (HVAC calls, cafe inventory, landscaper quotes) + guides
   components/
     IntakeWizard.tsx     4-step form (fields in IntakeFields, ChipInput, MicButton)

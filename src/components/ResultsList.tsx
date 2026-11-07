@@ -5,6 +5,7 @@ import { useFocusOnMount } from '../lib'
 import ToolCard, { type SortMode } from './ToolCard'
 import CompareTable from './CompareTable'
 import Modal from './Modal'
+import Duck from './Duck'
 import { BusinessField, ExistingToolsField, ProblemField, SizeBudgetFields } from './IntakeFields'
 
 const MAX_COMPARE = 3
@@ -69,7 +70,7 @@ export default function ResultsList({
     { label: answers.businessType === 'Other' && answers.businessOther ? answers.businessOther : answers.businessType, focus: 'r-biz' },
     answers.size && { label: answers.size, focus: 'r-size' },
     answers.budget && { label: answers.budget, focus: 'r-size' },
-    answers.category && { label: answers.category, focus: 'r-problem-text' },
+    ...answers.categories.map((c) => ({ label: c, focus: 'r-problem-text' })),
     answers.freeText && { label: `“${answers.freeText.length > 40 ? answers.freeText.slice(0, 40) + '…' : answers.freeText}”`, focus: 'r-problem-text' },
     answers.existingTools.length > 0 && { label: `Uses ${answers.existingTools.join(', ')}`, focus: 'r-existing' },
   ].filter(Boolean) as { label: string; focus: string }[]
@@ -79,7 +80,7 @@ export default function ResultsList({
   return (
     <div>
       <h1 ref={h1} tabIndex={-1} className="mb-2 text-3xl sm:text-4xl">{t('results.title')}</h1>
-      {results.cached && <p role="status" className="mb-3 rounded-xl bg-accent-soft p-3 font-bold">{t('results.cached')}</p>}
+      {results.cached && <p role="status" className="mb-3 rounded-xl bg-elevated p-3 font-bold">{t('results.cached')}</p>}
       <p className="mb-4 text-lg"><strong>{t('results.interpreted')}</strong> {results.interpretedProblem}</p>
 
       <section aria-labelledby="answers-h" className="card mb-6">
@@ -87,7 +88,7 @@ export default function ResultsList({
         <ul className="flex flex-wrap gap-2">
           {chips.map((c, i) => (
             <li key={i}>
-              <button type="button" onClick={() => openEdit(c.focus)} aria-label={`${c.label}. ${t('results.edit')}`} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-accent-soft px-4 font-bold text-accent hover:bg-[#cfe8e5]">
+              <button type="button" onClick={() => openEdit(c.focus)} aria-label={`${c.label}. ${t('results.edit')}`} className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-elevated px-4 font-bold text-info hover:bg-line">
                 {c.label}<span aria-hidden="true" className="text-sm underline">{t('results.edit')}</span>
               </button>
             </li>
@@ -101,7 +102,7 @@ export default function ResultsList({
             <ProblemField a={draft} set={set} idPrefix="r-" />
             <ExistingToolsField a={draft} set={set} idPrefix="r-" />
             <div className="flex flex-wrap gap-3">
-              <button type="button" className="btn-primary" disabled={!draft.businessType || (!draft.category && !draft.freeText.trim())} onClick={() => { setEditing(false); onRerun(draft) }}>
+              <button type="button" className="btn-primary" disabled={!draft.businessType || (draft.categories.length === 0 && !draft.freeText.trim())} onClick={() => { setEditing(false); onRerun(draft) }}>
                 {t('results.rerun')}
               </button>
               <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>{t('results.cancelEdit')}</button>
@@ -110,10 +111,11 @@ export default function ResultsList({
         )}
       </section>
 
-      {secondFor && <p role="status" className="mb-4 rounded-xl bg-accent-soft p-3 font-bold">{t('results.second', { name: secondFor.name })}</p>}
+      {secondFor && <p role="status" className="mb-4 rounded-xl bg-elevated p-3 font-bold">{t('results.second', { name: secondFor.name })}</p>}
 
       {ordered.length === 0 ? (
         <div className="card text-center">
+          <Duck size={96} className="mx-auto mb-2" />
           <h2 className="mb-2 text-2xl">{t('results.none.title')}</h2>
           <p className="mb-4">{t('results.few.body')}</p>
           <button type="button" className="btn-primary" onClick={() => openEdit()}>{t('results.few.cta')}</button>
@@ -133,7 +135,7 @@ export default function ResultsList({
           </fieldset>
 
           {few && (
-            <div role="status" className="mb-6 rounded-2xl border-2 border-[#B45309] bg-[#FFF4E0] p-5">
+            <div role="status" className="mb-6 rounded-2xl border-2 border-orange bg-elevated p-5">
               <h2 className="text-xl">{t('results.few.title')}</h2>
               <p className="mb-3">{t('results.few.body')}</p>
               <button type="button" className="btn-secondary" onClick={() => openEdit()}>{t('results.few.cta')}</button>
@@ -152,7 +154,7 @@ export default function ResultsList({
                   compared={picked.includes(x.id)}
                   compareDisabled={picked.length >= MAX_COMPARE}
                   onToggleCompare={() => toggle(x.id)}
-                  onChoose={() => onChoose(x)}
+                  onGuide={() => onChoose(x)}
                 />
               </li>
             ))}
@@ -162,14 +164,11 @@ export default function ResultsList({
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 text-muted">
         <p>{t('results.footer')}</p>
-        <div className="flex gap-2">
-          <button type="button" className="btn-ghost" onClick={onRank}>{t('results.howRank')}</button>
-          <button type="button" className="btn-ghost" onClick={onStartOver}>{t('results.startOver')}</button>
-        </div>
+        <button type="button" className="btn-ghost" onClick={onStartOver}>{t('results.startOver')}</button>
       </div>
 
       {picked.length > 0 && (
-        <div role="region" aria-label={t('compare.title')} className="sticky bottom-0 z-20 -mx-4 mt-6 border-t-2 border-accent bg-white p-3 shadow-lg">
+        <div role="region" aria-label={t('compare.title')} className="sticky bottom-0 z-20 -mx-4 mt-6 border-t-2 border-info bg-surface p-3 shadow-lg">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
             <p className="font-bold" role="status">{t('compare.bar', { n: picked.length })}{picked.length < 2 && ` · ${t('compare.min')}`}</p>
             <div className="flex gap-2">

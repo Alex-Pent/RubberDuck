@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- water shadow -->
+  <ellipse cx="100" cy="176" rx="72" ry="8" fill="#3DB8C9" opacity="0.25"/>
+  <!-- tail -->
+  <path d="M46 116 Q20 100 28 76 Q52 86 62 106 Z" fill="#FFC93C"/>
+  <!-- body -->
+  <path d="M40 120 C40 92 70 84 100 86 C140 88 160 110 156 134 C152 160 124 172 96 172 C62 172 40 152 40 120 Z" fill="#FFC93C"/>
+  <!-- head -->
+  <circle cx="128" cy="64" r="32" fill="#FFC93C"/>
+  <!-- beak -->
+  <path d="M154 62 C170 57 184 61 187 70 C184 79 168 81 154 76 Z" fill="#FF8A3D"/>
+  <!-- cheek -->
+  <circle cx="144" cy="72" r="5" fill="#FF8A3D" opacity="0.35"/>
+  <!-- eye -->
+  <circle cx="137" cy="56" r="4.5" fill="#0F1219"/>
+  <circle cx="138.6" cy="54.4" r="1.4" fill="#FFFFFF"/>
+  <!-- wing -->
+  <path d="M68 120 C82 102 116 106 126 126 C116 144 80 146 68 120 Z" fill="#E8A91F"/>
+  <!-- highlight -->
+  <ellipse cx="114" cy="44" rx="9" ry="5" fill="#FFFFFF" opacity="0.35" transform="rotate(-25 114 44)"/>
+</svg>
