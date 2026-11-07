@@ -42,6 +42,7 @@ export default function ToolCard({
     <HintButton term={t(`gloss.term.${k}` as TKey)} id={`${hid}-${k}`} open={hint === k} onToggle={() => tog(k)} className={className} />
   )
   const sortName = sort === 'price' ? t('results.sort.price') : t('results.sort.ease')
+  const visibleSources = (tool.sources || []).filter((s) => s && s.url && s.title)
 
   return (
     <article aria-labelledby={titleId} className="card print-card">
@@ -107,11 +108,15 @@ export default function ToolCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
         <span>{t('card.sources')}:</span>
-        {tool.sources.map((s) => (
+        {visibleSources.length > 0 ? visibleSources.map((s) => (
           <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="print-url inline-flex min-h-[44px] items-center text-info">
             {s.title}<span className="sr-only"> {t('card.opens')}</span>
           </a>
-        ))}
+        )) : (
+          <a href={tool.website} target="_blank" rel="noopener noreferrer" className="print-url inline-flex min-h-[44px] items-center text-info">
+            {t('card.visit')}<span className="sr-only"> {t('card.opens')}</span>
+          </a>
+        )}
         <span>{t('card.verified', { date: fmtDate(tool.lastVerified, lang) })}</span>
         <span className="inline-flex items-center gap-1 font-bold text-ink">
           <span aria-hidden="true" className="tracking-widest text-info">{'●'.repeat(dots)}<span className="text-edge">{'●'.repeat(3 - dots)}</span></span>

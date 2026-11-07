@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import type { Answers, SearchResults, Tool } from '../types'
-import { useT, type TKey } from '../i18n'
+import { useT } from '../i18n'
 import { useFocusOnMount } from '../lib'
-import ToolCard, { type SortMode } from './ToolCard'
+import ToolCard from './ToolCard'
 import CompareTable from './CompareTable'
 import Modal from './Modal'
 import Duck from './Duck'
@@ -29,7 +29,7 @@ export default function ResultsList({
 }) {
   const { t } = useT()
   const h1 = useFocusOnMount<HTMLHeadingElement>()
-  const [sort, setSort] = useState<SortMode>('fit')
+  const sort = 'fit' as const
   const [picked, setPicked] = useState<string[]>([])
   const [comparing, setComparing] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -45,12 +45,11 @@ export default function ResultsList({
     return fits.length ? fits : others
   }, [results.tools, secondFor])
 
-  const sortScore = (x: Tool, s: SortMode) =>
-    s === 'price' ? x.breakdown.price : s === 'ease' ? x.breakdown.easeOfSetup : x.overallScore
+  const sortScore = (x: Tool) => x.overallScore
   const ordered = useMemo(() => {
-    const rank = (x: Tool) => (sort === 'fit' ? x.overallScore : 0.4 * x.overallScore + 0.6 * sortScore(x, sort))
+    const rank = (x: Tool) => x.overallScore
     return [...pool].sort((a, b) => rank(b) - rank(a)).slice(0, 5)
-  }, [pool, sort])
+  }, [pool])
 
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : p.length < MAX_COMPARE ? [...p, id] : p))
@@ -141,18 +140,6 @@ export default function ResultsList({
         </div>
       ) : (
         <>
-          <fieldset className="no-print mb-6">
-            <legend className="mb-2 text-xl font-bold">{t('results.sortLabel')}</legend>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {(['fit', 'price', 'ease'] as SortMode[]).map((m) => (
-                <label key={m} className="choice">
-                  <input type="radio" name="sort" checked={sort === m} onChange={() => setSort(m)} />
-                  <span>{t(`results.sort.${m}` as TKey)}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
           {few && (
             <div role="status" className="mb-6 rounded-2xl border-2 border-orange bg-elevated p-5">
               <h2 className="text-xl">{t('results.few.title')}</h2>
@@ -168,7 +155,7 @@ export default function ResultsList({
                   tool={x}
                   rank={i + 1}
                   sort={sort}
-                  sortScore={sortScore(x, sort)}
+                  sortScore={sortScore(x)}
                   userTools={answers.existingTools}
                   compared={picked.includes(x.id)}
                   compareDisabled={picked.length >= MAX_COMPARE}

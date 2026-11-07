@@ -7,22 +7,29 @@ React + TypeScript + Tailwind, built with Vite. It works fully offline with mock
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # type-checks, then builds to dist/
+npm run server      # backend on http://localhost:8000
+npm run dev         # frontend on http://localhost:5173
+npm run build       # type-checks, then builds to dist/
 ```
 
-## Plug in the real backend
+## Real backend setup
 
 All network calls live in **`src/api.ts`**. Nothing else in the app calls `fetch`.
 
 1. Copy `.env.example` to `.env`.
-2. Set:
+2. Add your OpenRouter key:
    ```
-   VITE_USE_MOCK=false
-   VITE_API_BASE_URL=https://your-backend.example.com
+   OPENROUTER_API_KEY=your_key_here
+   PORT=8000
+   VITE_API_BASE_URL=
    ```
-   Leave `VITE_API_BASE_URL` empty to call `/api/...` on the same origin. In dev, Vite proxies `/api` to `http://localhost:8000` (see `vite.config.ts`).
-3. Restart `npm run dev`.
+   The frontend will call `/api/...` on the same origin by default. In dev, Vite proxies `/api` to `http://localhost:8000` (see `vite.config.ts`).
+3. Start both processes:
+   ```bash
+   npm run server
+   npm run dev
+   ```
+   or run `npm run dev:full` to start them together.
 
 The backend should implement the contract below. Types are in `src/types.ts`.
 
