@@ -69,7 +69,11 @@ export default function App() {
   }, [screen, answers, results, chosen])
 
   const search = (a: Answers) => { setAnswers(a); setSecondFor(null); setRestored(false); go('loading') }
-  const startOver = () => { setResults(null); setChosen(null); setSecondFor(null); setRestored(false); go('intake') }
+  const [formKey, setFormKey] = useState(0) // bumping this gives a fresh wizard (back on step 1)
+  // Logo: go back to the form but keep what was typed.
+  const goHome = () => { setResults(null); setChosen(null); setSecondFor(null); setRestored(false); go('intake') }
+  // "Start over": also clear every answer.
+  const startOver = () => { setAnswers(emptyAnswers); setFormKey((k) => k + 1); goHome() }
 
   const safeScreen: Screen =
     (screen === 'results' && !results) || (screen === 'guide' && (!chosen || !results)) ? 'intake' : screen
@@ -77,7 +81,7 @@ export default function App() {
   return (
     <>
     <DuckSprite />
-    <Layout onHome={startOver} onHow={() => setDlg('how')} onSba={() => setDlg('sba')} onRank={() => setDlg('rank')}>
+    <Layout onHome={goHome} onHow={() => setDlg('how')} onSba={() => setDlg('sba')} onRank={() => setDlg('rank')}>
       {restored && (safeScreen === 'results' || safeScreen === 'guide') && (
         <div role="status" className="card mb-6 flex flex-wrap items-center justify-between gap-3">
           <p className="font-bold">{t('saved.welcome')}</p>
@@ -87,7 +91,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {safeScreen === 'intake' && <IntakeWizard answers={answers} setAnswers={setAnswers} onSubmit={() => search(answers)} />}
+      {safeScreen === 'intake' && <IntakeWizard key={formKey} answers={answers} setAnswers={setAnswers} onSubmit={() => search(answers)} />}
       {safeScreen === 'loading' && (
         <ProgressView
           request={toRequest(answers)}
