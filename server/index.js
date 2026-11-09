@@ -137,7 +137,7 @@ function toTool(item, citations, index) {
   }
 }
 
-async function searchAndRankTools(req) {
+async function searchAndRankTools(req, onModelDone = () => {}) {
   if (!openRouter) throw new Error('OPENROUTER_API_KEY is required for live web search.')
 
   const prompt = `Find and rank real software products for this small business request. Use web search results and page excerpts as evidence; do not rely on memory.
@@ -168,6 +168,7 @@ Requirements:
     ],
   })
 
+  onModelDone() // the slow part (web search + model) is over; only checking and ranking remain
   const message = completion.choices?.[0]?.message
   const payload = parseJson(message?.content)
   if (!payload || !Array.isArray(payload.tools)) throw new Error('Web search did not return valid recommendations.')
@@ -212,7 +213,10 @@ app.post('/api/search', async (req, res) => {
       percent: 0,
       done: false,
       results: null,
+      error: null,
+      phase: 'working', // 'working' while the web search + model call runs, then 'ranking'
     })
+    runSearch(searchId)
 
     res.json({ searchId })
   } catch (error) {
@@ -220,48 +224,64 @@ app.post('/api/search', async (req, res) => {
   }
 })
 
+/**
+ * Progress is reported from what the server is really doing:
+ *  - results exist            -> 100, done
+ *  - the job failed           -> failed
+ *  - the model call returned  -> 94 ("Ranking"): validating and sorting is all that is left
+ *  - the model call is running -> an estimate that rises quickly, then slows and can never
+ *    reach 100 by itself. We cannot see inside a single web-search call, so we do not
+ *    pretend to; the bar only completes when the results are truly ready.
+ * The number never goes backwards.
+ */
+const EXPECTED_CALL_MS = 10000
+function statusFor(entry) {
+  if (entry.error) return { stage: 'Something went wrong', percent: entry.percent, done: true, failed: true }
+  if (entry.results) return { stage: 'Ranking your matches', percent: 100, done: true }
+  let percent
+  if (entry.phase === 'ranking') {
+    percent = 94
+  } else {
+    const elapsed = Date.now() - entry.startedAt
+    percent = 4 + 86 * (1 - Math.exp(-elapsed / EXPECTED_CALL_MS)) // 4% at the start, approaches 90%; measured searches take ~20-25s, landing around 80%
+  }
+  percent = Math.round(clamp(Math.max(percent, entry.percent || 0), 0, 99))
+  entry.percent = percent
+  const stage =
+    entry.phase === 'ranking' ? 'Ranking your matches'
+    : percent < 12 ? 'Understanding your problem'
+    : percent < 45 ? 'Searching for tools'
+    : 'Checking prices and integrations'
+  return { stage, percent, done: false }
+}
+
+async function runSearch(searchId) {
+  const entry = searches.get(searchId)
+  if (!entry) return
+  try {
+    const cached = cache.get(cacheKey(entry.request))
+    const results = cached || await searchAndRankTools(entry.request, () => { entry.phase = 'ranking' })
+    for (const tool of results.tools) discoveredTools.set(tool.id, tool)
+    cache.set(cacheKey(entry.request), results)
+    entry.results = results
+  } catch (error) {
+    console.error('search failed:', error)
+    entry.error = error instanceof Error ? error.message : 'Search failed.'
+  }
+}
+
 app.get('/api/search/:id/status', (req, res) => {
-  const initial = searches.get(req.params.id)
-  if (!initial) return res.status(404).json({ error: 'Search not found.' })
-
-  const elapsed = Date.now() - initial.startedAt
-  const percent = clamp(Math.round((elapsed / 7000) * 100), 0, 100)
-  const stages = [
-    'Understanding your problem',
-    'Searching for tools',
-    'Checking prices and integrations',
-    'Ranking your matches',
-  ]
-  const stageIndex = Math.min(stages.length - 1, Math.floor((percent / 100) * stages.length))
-  const done = percent >= 100
-
-  const status = { stage: stages[stageIndex], percent, done }
-  initial.stage = status.stage
-  initial.percent = status.percent
-  initial.done = status.done
-  searches.set(req.params.id, initial)
-
-  res.json(status)
+  const entry = searches.get(req.params.id)
+  if (!entry) return res.status(404).json({ error: 'Search not found.' })
+  res.json(statusFor(entry))
 })
 
-app.get('/api/search/:id/results', async (req, res) => {
-  try {
-    const entry = searches.get(req.params.id)
-    if (!entry) return res.status(404).json({ error: 'Search not found.' })
-
-    if (!entry.results) {
-      const results = await searchAndRankTools(entry.request)
-      entry.results = results
-      for (const tool of results.tools) discoveredTools.set(tool.id, tool)
-      cache.set(cacheKey(entry.request), results)
-      searches.set(req.params.id, entry)
-    }
-
-    res.json(entry.results)
-  } catch (error) {
-    console.error('results failed:', error)
-    res.status(500).json({ error: 'Unable to fetch results.' })
-  }
+app.get('/api/search/:id/results', (req, res) => {
+  const entry = searches.get(req.params.id)
+  if (!entry) return res.status(404).json({ error: 'Search not found.' })
+  if (entry.error) return res.status(500).json({ error: 'Unable to fetch results.' })
+  if (!entry.results) return res.status(409).json({ error: 'Search is still running.' })
+  res.json(entry.results)
 })
 
 app.get('/api/search/cached', (req, res) => {

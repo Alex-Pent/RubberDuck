@@ -10,6 +10,8 @@ const TIMEOUT_MS = 90_000
 const POLL_MS = 1500
 const STEPS: TKey[] = ['loading.step.understand', 'loading.step.search', 'loading.step.price', 'loading.step.rank']
 
+const STAGE_NAMES = ['Understanding your problem', 'Searching for tools', 'Checking prices and integrations', 'Ranking your matches']
+
 type Phase = 'running' | 'timeout' | 'error'
 
 export default function ProgressView({
@@ -53,9 +55,13 @@ export default function ProgressView({
           try {
             const s = await api.getStatus(searchId, ctl.signal)
             if (ctl.signal.aborted) return
-            setStatus(s)
+            if (s.failed) return fail('error')
+            // The bar only moves forward, even if a status arrives late or out of order.
+            setStatus((prev) => ({ ...s, percent: Math.max(prev.percent, s.percent) }))
             if (s.done) {
               const r = await api.getResults(searchId, ctl.signal)
+              // Show 100% for a moment so the finish is visible before the page changes.
+              await new Promise((res) => setTimeout(res, 600))
               if (!ctl.signal.aborted) onDone(r)
               return
             }
@@ -78,7 +84,9 @@ export default function ProgressView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt])
 
-  const current = status.done ? STEPS.length : Math.min(STEPS.length - 1, Math.floor(status.percent / 25))
+  // Highlight the step the server says it is on; fall back to the percent if the name is unknown.
+  const named = STAGE_NAMES.indexOf(status.stage)
+  const current = status.done ? STEPS.length : named >= 0 ? named : Math.min(STEPS.length - 1, Math.floor(status.percent / 25))
 
   if (phase !== 'running') {
     const isTimeout = phase === 'timeout'

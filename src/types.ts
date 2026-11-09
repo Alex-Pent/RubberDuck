@@ -53,6 +53,8 @@ export interface SearchStatus {
   stage: string
   percent: number
   done: boolean
+  /** true when the search ended in an error (done is also true) */
+  failed?: boolean
 }
 
 export interface Guide {
